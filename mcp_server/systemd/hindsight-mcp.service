@@ -1,0 +1,26 @@
+# Template: replace <user> with the deploy user before installing.
+[Unit]
+Description=Hindsight MCP server (Substrate 0)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=<user>
+Group=<user>
+# Deploy path is ~/hindsight-mcp (standalone; no need to clone the full repo).
+WorkingDirectory=/home/<user>/hindsight-mcp
+# Loads DATABASE_URL and OPENAI_API_KEY.
+EnvironmentFile=/home/<user>/.secrets/hindsight.env
+# Bind to 0.0.0.0 and rely on UFW + pg_hba-style CIDR rule for Tailscale-only access
+# (matches the Phase 1 posture for Postgres).
+Environment="MCP_HOST=0.0.0.0"
+Environment="MCP_PORT=8765"
+ExecStart=/home/<user>/hindsight-mcp/.venv/bin/hindsight-mcp
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

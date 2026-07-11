@@ -1,0 +1,12 @@
+[Unit]
+Description=Run hindsight pg_backup nightly
+
+[Timer]
+# 03:15 local time every day — well after any interactive use and
+# before morning. Persistent=true so a missed firing (box offline)
+# runs at next boot.
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

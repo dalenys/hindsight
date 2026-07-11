@@ -1,0 +1,49 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node (preventive — none yet)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Session / scratch state (not project content)
+.remember/
+
+# Claude Code per-machine state (but track repo config like agents/, commands/, settings.json)
+.claude/*.jsonl
+.claude/cache/
+.claude/tmp/
+.claude/state.json
+.claude/*.local.*
+!.claude/agents/
+!.claude/commands/
+!.claude/settings.json
+
+# Personal data — chat exports, ingested content, local dumps
+data/
+
+# Personal deploy wiring — copy .mcp.json.example and point it at your server
+.mcp.json
+
+# Local evaluation/benchmark output — contains excerpts of the private corpus
+results/*
+!results/README.md
