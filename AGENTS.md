@@ -82,7 +82,7 @@ dbmate up
 Run the MCP server locally:
 
 ```bash
-cd mcp_server && uv run hindsight-mcp        # http://127.0.0.1:8765/mcp/
+cd mcp_server && uv run hindsight-mcp        # http://127.0.0.1:8765/mcp
 curl http://127.0.0.1:8765/health
 ```
 
