@@ -1,6 +1,8 @@
 # Hindsight
 
-**Personal chat-history recall as an MCP tool.** Hindsight ingests your exported Claude and ChatGPT conversations into Postgres, indexes them with OpenAI embeddings and Postgres full-text search, and exposes a single `search` tool over MCP — so any Claude session can answer "what did I decide about X?" from your actual history instead of guessing.
+**The open-source, self-hosted memory substrate for AI agents.** One Postgres store of everything you've said, written, and done — fed by pluggable ingesters, queryable from any MCP client.
+
+Today that means your exported Claude and ChatGPT conversations: Hindsight ingests them into your Postgres, indexes them with embeddings and full-text search, and exposes a single `search` tool over MCP — so any AI session can answer "what did I decide about X?" from your actual history instead of guessing. Chat exports are the first ingesters, not the product; the same store is designed to absorb notes, git history, and other personal sources over time.
 
 Everything runs on infrastructure you own: one Postgres database with `pgvector`, one small Python MCP server, no SaaS in the retrieval path.
 
@@ -20,7 +22,23 @@ Everything runs on infrastructure you own: one Postgres database with `pgvector`
 
 ## Why
 
-Chat assistants forget everything between conversations. Years of decisions, evaluations, and reasoning sit unsearchable in export files. Hindsight is the retrieval substrate of a larger [personal AI infrastructure roadmap](docs/planning/agent-infrastructure-roadmap.md): foundations first, point-solution agents later. It deliberately stays small — one corpus, one store, one tool.
+Chat assistants forget everything between conversations, and what they do remember is locked in vendor silos. Years of decisions, evaluations, and reasoning sit unsearchable in export files. Hindsight is the retrieval substrate of a larger [personal AI infrastructure roadmap](docs/planning/agent-infrastructure-roadmap.md): foundations first, point-solution agents later. It deliberately stays small — one store, one tool, many narrow ingesters.
+
+### How it's different
+
+| Alternative                     | Why it isn't this                                          |
+| ------------------------------- | ---------------------------------------------------------- |
+| Vendor memory (ChatGPT, Claude) | Siloed per vendor, opaque, not portable, not yours         |
+| mem0 / Zep / Letta              | Memory frameworks for apps you build; write-time synthesis |
+| Rewind / Limitless              | Capture-everything, but proprietary and cloud-bound        |
+| Khoj / second-brain tools       | Human-facing UIs, not infrastructure for agents            |
+
+Four bets, each an architectural decision rather than a slogan:
+
+1. **One memory, every agent.** Cross-vendor and MCP-native — Claude Code today, any MCP client tomorrow, all querying the same store ([topology ADR](docs/decisions/2026-07-10-knowledge-store-topology.md)).
+2. **Lossless by design.** Memory frameworks decide at write time what's worth remembering, compressing your words into synthesized "memories." Hindsight embeds the faithful source and lets the model think at query time.
+3. **Yours forever.** Self-hosted, no SaaS in the retrieval path. The exit story is unbeatable: it's just Postgres — `pg_dump` and leave. (Embedding calls currently go to OpenAI; a local-embedding mode is on the roadmap for a zero-cloud setup.)
+4. **Boring stack, no second job.** Postgres + pgvector + FTS fused with RRF, in one database. No vector-DB SaaS, no graph database, no framework. What this project refuses to become is part of the design — see the roadmap's anti-scope.
 
 ## Architecture
 
@@ -137,6 +155,7 @@ This is a personal-data substrate — the corpus is your private conversation hi
 | Doc                                                      | What it covers                                                       |
 | -------------------------------------------------------- | -------------------------------------------------------------------- |
 | [Roadmap](docs/planning/agent-infrastructure-roadmap.md) | The substrate-first plan this project executes, including anti-scope |
+| [Positioning](docs/planning/positioning.md)              | What this project is (and refuses to be) in the market, and why      |
 | [Design specs](docs/superpowers/specs/)                  | Design contracts for Substrate 0 and Substrate 1                     |
 | [Decision records](docs/decisions/)                      | ADRs — e.g. knowledge-store topology                                 |
 | [Runbooks](docs/runbooks/)                               | Postgres setup, schema migration, deploy procedures                  |
@@ -146,7 +165,19 @@ Docs are kept as a historical record of how the system was built; treat runbooks
 
 ## Status
 
-Substrate 0 (vertical slice) and Substrate 1 Phases 1–3 (schema migration, backfill, hybrid retrieval) have shipped. Phase 4 (ingester rewrite against the new schema, archive-table removal) is not yet scoped — the ingest caveat above stands until it lands.
+Shipped and roadmap, honestly labeled — vision claims above should be read against this table.
+
+| Area                                             | Status                                              |
+| ------------------------------------------------ | --------------------------------------------------- |
+| Claude + ChatGPT ingesters (parse, chunk, embed) | ✅ Shipped                                          |
+| Hybrid search MCP server (pgvector + FTS, RRF)   | ✅ Shipped                                          |
+| Schema migrations + S0→S1 backfill               | ✅ Shipped                                          |
+| Ingester rewrite against the S1 schema (Phase 4) | 🔜 Next — the ingest caveat above stands until then |
+| Docker Compose install story                     | 🗺️ Roadmap                                          |
+| Local embedding option (zero-cloud mode)         | 🗺️ Roadmap                                          |
+| Ingester contract for third-party sources        | 🗺️ Roadmap                                          |
+
+Positioning and messaging rules live in [docs/planning/positioning.md](docs/planning/positioning.md); the ordering rationale for the roadmap items is in the [roadmap](docs/planning/agent-infrastructure-roadmap.md).
 
 ## License
 

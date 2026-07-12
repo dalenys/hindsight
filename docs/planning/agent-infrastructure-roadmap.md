@@ -446,6 +446,22 @@ If after Substrate 0, the retrieval quality doesn't noticeably improve over plai
 
 ---
 
+## Earning the USP publicly
+
+Added 2026-07-12. Hindsight is going public as an open-source project positioned as **the self-hosted memory substrate for AI agents** (see [positioning.md](positioning.md)). That positioning creates adoption-driven priorities that sit alongside — not instead of — the substrate ordering above. None of them jump substrates: items 1 and 4 are Substrate 1/2 work already implied by the roadmap; items 2 and 3 are packaging and portability for external users.
+
+Ordering rationale: correctness before convenience, convenience before new capability, capability before relaunch noise.
+
+1. **Substrate 1 Phase 4 — ingester rewrite against the S1 schema.** Blocking for adoption: an external user's first real ingest hits the S0-writer/S1-reader mismatch today.
+2. **Docker Compose install story.** Postgres+pgvector, `hindsight-mcp`, optional local embedder, plus a guided ingest flow. Time-to-first-recall is the adoption killer for the target audience (AI power users).
+3. **Local embedding option.** One blessed local backend (e.g. Ollama or sentence-transformers). The schema already supports it (`embeddings_<dim>` keyed `(item_id, model)`); this makes the zero-cloud privacy claim honest. Evaluate against the golden query set before documenting as supported.
+4. **Ingester contract.** A small documented contract (idempotent, narrow, source-tagged writes into `items`) with a reference implementation — the community-contribution surface that makes "pluggable capture" real. A contract, not an SDK framework.
+5. **Public relaunch messaging** once items 1–2 land.
+
+Each item is its own unit of work, scoped separately. Anti-scope holds throughout: no UI, no multi-user or hosted mode, no framework — adoption requests that pull in those directions get pointed at the positioning doc's anti-scope section.
+
+---
+
 ## Quick Reference
 
 ```
