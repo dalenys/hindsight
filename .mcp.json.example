@@ -2,7 +2,7 @@
   "mcpServers": {
     "hindsight": {
       "type": "http",
-      "url": "http://<your-server>:8765/mcp/"
+      "url": "http://<your-server>:8765/mcp"
     }
   }
 }

@@ -14,7 +14,7 @@ uv sync
 ```bash
 set -a && source ~/.secrets/hindsight.env && set +a
 uv run hindsight-mcp
-# default MCP endpoint: http://127.0.0.1:8765/mcp/
+# default MCP endpoint: http://127.0.0.1:8765/mcp
 # health endpoint:      http://127.0.0.1:8765/health
 ```
 

@@ -121,7 +121,7 @@ uv run chat-ingester --source chatgpt --export-path /path/to/export-dir --dry-ru
 ```bash
 cd mcp_server && uv sync
 uv run hindsight-mcp
-# MCP endpoint: http://127.0.0.1:8765/mcp/
+# MCP endpoint: http://127.0.0.1:8765/mcp
 curl http://127.0.0.1:8765/health
 ```
 
