@@ -452,7 +452,7 @@ Added 2026-07-12. Hindsight is going public as an open-source project positioned
 
 Ordering rationale: correctness before convenience, convenience before new capability, capability before relaunch noise.
 
-1. **Substrate 1 Phase 4 — ingester rewrite against the S1 schema.** Blocking for adoption: an external user's first real ingest hits the S0-writer/S1-reader mismatch today.
+1. **Substrate 1 Phase 4 — ingester rewrite against the S1 schema.** _Implemented (2026-07-12; unit-verified, fresh-DB end-to-end check pending)._ The chat-export writer now targets `items` + `embeddings_1536`, closing the S0-writer/S1-reader mismatch that blocked an external user's first ingest. Design: [`../superpowers/specs/2026-07-12-substrate-1-phase-4-design.md`](../superpowers/specs/2026-07-12-substrate-1-phase-4-design.md).
 2. **Docker Compose install story.** Postgres+pgvector, `hindsight-mcp`, optional local embedder, plus a guided ingest flow. Time-to-first-recall is the adoption killer for the target audience (AI power users).
 3. **Local embedding option.** One blessed local backend (e.g. Ollama or sentence-transformers). The schema already supports it (`embeddings_<dim>` keyed `(item_id, model)`); this makes the zero-cloud privacy claim honest. Evaluate against the golden query set before documenting as supported.
 4. **Ingester contract.** A small documented contract (idempotent, narrow, source-tagged writes into `items`) with a reference implementation — the community-contribution surface that makes "pluggable capture" real. A contract, not an SDK framework.

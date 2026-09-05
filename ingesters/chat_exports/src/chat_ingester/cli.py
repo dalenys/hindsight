@@ -31,6 +31,17 @@ _PARSERS = {"claude": claude_parser.parse, "chatgpt": chatgpt_parser.parse}
 log = logging.getLogger("chat_ingester")
 
 
+def _replace_blocked(*, item_count: int, mode: str, allow_nonempty: bool) -> bool:
+    """Whether a replace-mode run must be refused to protect an existing corpus.
+
+    `--mode=replace` deletes the source's rows before inserting. Against a
+    populated database (e.g. the backfill-owned live Substrate 1 corpus)
+    that is destructive, so it is refused unless the operator explicitly
+    passes --allow-nonempty. Fresh installs (empty `items`) are never blocked.
+    """
+    return mode == "replace" and item_count > 0 and not allow_nonempty
+
+
 def _resolve_shards(export_path: Path) -> list[Path]:
     """Return the list of JSON files to parse.
 
@@ -70,6 +81,11 @@ def main(argv: list[str] | None = None) -> int:
         choices=["replace", "append"],
         help="replace deletes existing rows for --source before inserting; append skips the delete",
     )
+    parser.add_argument(
+        "--allow-nonempty",
+        action="store_true",
+        help="permit --mode=replace against a non-empty items table (guards the backfill-owned live DB)",
+    )
     parser.add_argument("--dry-run", action="store_true", help="parse and chunk only; skip embedding and DB writes")
     parser.add_argument("--max-convos", type=int, default=None, help="limit to the first N conversations (for testing)")
     args = parser.parse_args(argv)
@@ -101,6 +117,27 @@ def main(argv: list[str] | None = None) -> int:
 
     conn = writer.connect(os.environ["DATABASE_URL"])
     try:
+        # Guard the backfill-owned live DB: refuse a destructive replace
+        # against a non-empty corpus unless the operator opts in. Fresh
+        # installs (empty items) proceed with no friction.
+        item_count = writer.count_items(conn)
+        # The count SELECT opens an implicit transaction on a non-autocommit
+        # connection; roll it back so the write `conn.transaction()` below is
+        # a top-level transaction that commits on exit (not a savepoint that
+        # would leave the inserts uncommitted until close() rolls them back).
+        conn.rollback()
+        if _replace_blocked(
+            item_count=item_count,
+            mode=args.mode,
+            allow_nonempty=args.allow_nonempty,
+        ):
+            log.error(
+                "refusing --mode=replace against a non-empty items table; "
+                "pass --allow-nonempty to override (this deletes existing rows for source=%s)",
+                args.source,
+            )
+            return 2
+
         # Atomic replace: delete + insert share one transaction. If the
         # embed or insert step fails, the prior corpus is preserved via
         # rollback on exception. Previously, delete_source() committed on
